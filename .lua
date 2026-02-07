@@ -5,14 +5,16 @@ local UserInputService = game:GetService("UserInputService")
 local CoreGui = game:GetService("CoreGui")
 local TweenService = game:GetService("TweenService")
 
+-- Настройки темы (Темная + Розовый + Фреймы)
 local Theme = {
-	Background = Color3.fromRGB(15, 15, 18),
-	Section = Color3.fromRGB(20, 20, 24), -- Фон элементов
-	Text = Color3.fromRGB(230, 230, 230),
-	TextDark = Color3.fromRGB(120, 120, 120),
-	Accent = Color3.fromRGB(234, 105, 190), -- Розовый как на фото
+	Background = Color3.fromRGB(15, 15, 18), -- Основной фон
+	SectionText = Color3.fromRGB(255, 255, 255),
+	Text = Color3.fromRGB(220, 220, 220),
+	TextDark = Color3.fromRGB(140, 140, 140),
+	Accent = Color3.fromRGB(234, 105, 190), -- Твой розовый
+	ElementBg = Color3.fromRGB(25, 25, 30), -- Фон для кнопок/слайдеров
+	ElementBorder = Color3.fromRGB(45, 45, 50), -- Обводка элементов
 	ToggleOff = Color3.fromRGB(45, 45, 50),
-	BindBg = Color3.fromRGB(35, 35, 40),
 	Font = Enum.Font.GothamMedium,
 	FontBold = Enum.Font.GothamBold
 }
@@ -23,6 +25,16 @@ local function Create(class, props)
 		obj[k] = v
 	end
 	return obj
+end
+
+-- Функция для добавления обводки (Stroke) к элементам
+local function AddStroke(parent, color, thickness)
+	local stroke = Instance.new("UIStroke")
+	stroke.Color = color or Theme.ElementBorder
+	stroke.Thickness = thickness or 1
+	stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+	stroke.Parent = parent
+	return stroke
 end
 
 local function MakeDraggable(frame, dragHandle)
@@ -58,7 +70,7 @@ end
 
 function Library:CreateWindow(title, size)
 	local ScreenGui = Create("ScreenGui", {
-		Name = "MatchaLib_Visual",
+		Name = "MatchaLib_Pro",
 		ResetOnSpawn = false,
 		ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 	})
@@ -74,7 +86,7 @@ function Library:CreateWindow(title, size)
 		ScreenGui.Parent = Players.LocalPlayer:WaitForChild("PlayerGui")
 	end
 
-	local windowSize = size or UDim2.new(0, 550, 0, 500)
+	local windowSize = size or UDim2.new(0, 580, 0, 500)
 
 	local Window = Create("Frame", {
 		Name = "Main",
@@ -86,12 +98,14 @@ function Library:CreateWindow(title, size)
 		ClipsDescendants = true
 	})
 	
-	Create("UICorner", {Parent = Window, CornerRadius = UDim.new(0, 6)})
+	Create("UICorner", {Parent = Window, CornerRadius = UDim.new(0, 8)})
+	-- Обводка всего окна
+	AddStroke(Window, Color3.fromRGB(60, 60, 65), 1.5) 
 	
 	local TopBar = Create("Frame", {
 		Parent = Window,
 		BackgroundTransparency = 1,
-		Size = UDim2.new(1, 0, 0, 35),
+		Size = UDim2.new(1, 0, 0, 40),
 		Name = "TopBar",
 		ZIndex = 2
 	})
@@ -104,30 +118,30 @@ function Library:CreateWindow(title, size)
 		Font = Theme.FontBold,
 		Text = title,
 		TextColor3 = Theme.Text,
-		TextSize = 15,
+		TextSize = 16,
 		TextXAlignment = Enum.TextXAlignment.Left
 	})
 
 	local CloseBtn = Create("TextButton", {
 		Parent = TopBar,
 		BackgroundTransparency = 1,
-		Position = UDim2.new(1, -30, 0, 0),
-		Size = UDim2.new(0, 30, 1, 0),
+		Position = UDim2.new(1, -35, 0, 0),
+		Size = UDim2.new(0, 35, 1, 0),
 		Font = Theme.Font,
 		Text = "×",
 		TextColor3 = Theme.TextDark,
-		TextSize = 22
+		TextSize = 24
 	})
 
 	local MinBtn = Create("TextButton", {
 		Parent = TopBar,
 		BackgroundTransparency = 1,
-		Position = UDim2.new(1, -60, 0, 0),
-		Size = UDim2.new(0, 30, 1, 0),
+		Position = UDim2.new(1, -70, 0, 0),
+		Size = UDim2.new(0, 35, 1, 0),
 		Font = Theme.Font,
 		Text = "-",
 		TextColor3 = Theme.TextDark,
-		TextSize = 22
+		TextSize = 24
 	})
 	
 	MakeDraggable(Window, TopBar)
@@ -135,7 +149,7 @@ function Library:CreateWindow(title, size)
 	local TabHolder = Create("Frame", {
 		Parent = Window,
 		BackgroundTransparency = 1,
-		Position = UDim2.new(0, 15, 0, 40),
+		Position = UDim2.new(0, 15, 0, 45),
 		Size = UDim2.new(1, -30, 0, 25)
 	})
 
@@ -149,8 +163,8 @@ function Library:CreateWindow(title, size)
 	local ContentHolder = Create("Frame", {
 		Parent = Window,
 		BackgroundTransparency = 1,
-		Position = UDim2.new(0, 0, 0, 75),
-		Size = UDim2.new(1, 0, 1, -75),
+		Position = UDim2.new(0, 0, 0, 80),
+		Size = UDim2.new(1, 0, 1, -80),
 		ClipsDescendants = true
 	})
 
@@ -163,7 +177,7 @@ function Library:CreateWindow(title, size)
 		minimized = not minimized
 		if minimized then
 			ContentHolder.Visible = false
-			Window:TweenSize(UDim2.new(originalSize.X.Scale, originalSize.X.Offset, 0, 40), "Out", "Quad", 0.3, true)
+			Window:TweenSize(UDim2.new(originalSize.X.Scale, originalSize.X.Offset, 0, 45), "Out", "Quad", 0.3, true)
 		else
 			Window:TweenSize(originalSize, "Out", "Quad", 0.3, true, function()
 				ContentHolder.Visible = true
@@ -203,7 +217,7 @@ function Library:CreateWindow(title, size)
 			BorderSizePixel = 0
 		})
 		
-		-- Вертикальная розовая линия посередине
+		-- Вертикальная розовая линия
 		local Divider = Create("Frame", {
 			Parent = TabPage,
 			BackgroundColor3 = Theme.Accent,
@@ -212,7 +226,6 @@ function Library:CreateWindow(title, size)
 			Position = UDim2.new(0.5, -1, 0, 10),
 			ZIndex = 5
 		})
-		-- Легкий градиент на линии, чтобы она выглядела стильнее
 		Create("UIGradient", {
 			Parent = Divider,
 			Color = ColorSequence.new{
@@ -226,24 +239,23 @@ function Library:CreateWindow(title, size)
 			Parent = TabPage,
 			BackgroundTransparency = 1,
 			Size = UDim2.new(0.46, 0, 1, 0),
-			Position = UDim2.new(0, 10, 0, 0)
+			Position = UDim2.new(0, 12, 0, 0)
 		})
 		
 		local RightCol = Create("Frame", {
 			Parent = TabPage,
 			BackgroundTransparency = 1,
 			Size = UDim2.new(0.46, 0, 1, 0),
-			Position = UDim2.new(0.54, -10, 0, 0)
+			Position = UDim2.new(0.54, -12, 0, 0)
 		})
 		
-		local L_Layout = Create("UIListLayout", {Parent = LeftCol, SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 8)})
-		local R_Layout = Create("UIListLayout", {Parent = RightCol, SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 8)})
+		local L_Layout = Create("UIListLayout", {Parent = LeftCol, SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 10)})
+		local R_Layout = Create("UIListLayout", {Parent = RightCol, SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 10)})
 
-		-- Авто-размер канваса
 		local function UpdateCanvas()
 			local max = math.max(L_Layout.AbsoluteContentSize.Y, R_Layout.AbsoluteContentSize.Y)
 			TabPage.CanvasSize = UDim2.new(0, 0, 0, max + 40)
-			Divider.Size = UDim2.new(0, 2, 0, max + 20) -- Линия тянется за контентом
+			Divider.Size = UDim2.new(0, 2, 0, max + 20)
 		end
 		L_Layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(UpdateCanvas)
 		R_Layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(UpdateCanvas)
@@ -271,11 +283,11 @@ function Library:CreateWindow(title, size)
 				Create("TextLabel", {
 					Parent = parent,
 					BackgroundTransparency = 1,
-					Size = UDim2.new(1, 0, 0, 30),
+					Size = UDim2.new(1, 0, 0, 25),
 					Font = Theme.FontBold,
 					Text = text,
-					TextColor3 = Theme.Text,
-					TextSize = 15,
+					TextColor3 = Theme.SectionText,
+					TextSize = 14,
 					TextXAlignment = Enum.TextXAlignment.Left
 				})
 			end
@@ -284,23 +296,25 @@ function Library:CreateWindow(title, size)
 				local ToggleContainer = Create("Frame", {
 					Parent = parent,
 					BackgroundTransparency = 1,
-					Size = UDim2.new(1, 0, 0, 25)
+					Size = UDim2.new(1, 0, 0, 26)
 				})
 				
-				-- Круг переключателя (Слева как на фото)
+				-- Круглый индикатор
 				local Indicator = Create("Frame", {
 					Parent = ToggleContainer,
 					BackgroundColor3 = default and Theme.Accent or Theme.ToggleOff,
 					Size = UDim2.new(0, 18, 0, 18),
 					Position = UDim2.new(0, 0, 0.5, -9)
 				})
-				Create("UICorner", {Parent = Indicator, CornerRadius = UDim.new(1, 0)}) -- Круг
-				
+				Create("UICorner", {Parent = Indicator, CornerRadius = UDim.new(1, 0)})
+				-- Обводка для индикатора
+				-- AddStroke(Indicator, Theme.ElementBorder, 1)
+
 				local Label = Create("TextLabel", {
 					Parent = ToggleContainer,
 					BackgroundTransparency = 1,
-					Position = UDim2.new(0, 26, 0, 0), -- Текст сразу после круга
-					Size = UDim2.new(1, -80, 1, 0),
+					Position = UDim2.new(0, 26, 0, 0),
+					Size = UDim2.new(1, -85, 1, 0),
 					Font = Theme.Font,
 					Text = text,
 					TextColor3 = Theme.TextDark,
@@ -308,25 +322,25 @@ function Library:CreateWindow(title, size)
 					TextXAlignment = Enum.TextXAlignment.Left
 				})
 
-				-- Кнопка Бинда (Справа, капсула)
+				-- Кнопка Бинда (В ФРЕЙМЕ)
 				local BindBtn = Create("TextButton", {
 					Parent = ToggleContainer,
-					BackgroundColor3 = Theme.BindBg,
-					Position = UDim2.new(1, -60, 0.5, -9),
-					Size = UDim2.new(0, 60, 0, 18),
+					BackgroundColor3 = Theme.ElementBg, -- Фон
+					Position = UDim2.new(1, -50, 0.5, -9),
+					Size = UDim2.new(0, 50, 0, 18),
 					Font = Theme.Font,
 					Text = "Bind",
-					TextColor3 = Color3.fromRGB(100, 100, 100),
-					TextSize = 10,
+					TextColor3 = Theme.TextDark,
+					TextSize = 11,
 					AutoButtonColor = false
 				})
 				Create("UICorner", {Parent = BindBtn, CornerRadius = UDim.new(0, 4)})
+				AddStroke(BindBtn, Theme.ElementBorder, 1) -- Обводка
 
-				-- Невидимая кнопка на весь элемент для клика
 				local ClickBtn = Create("TextButton", {
 					Parent = ToggleContainer,
 					BackgroundTransparency = 1,
-					Size = UDim2.new(1, -65, 1, 0), -- Не перекрывает бинд
+					Size = UDim2.new(1, -60, 1, 0),
 					Text = ""
 				})
 
@@ -362,7 +376,7 @@ function Library:CreateWindow(title, size)
 						elseif input.UserInputType == Enum.UserInputType.MouseButton1 then
 							BindBtn.Text = "Bind"
 							bindKey = nil
-							BindBtn.TextColor3 = Color3.fromRGB(100, 100, 100)
+							BindBtn.TextColor3 = Theme.TextDark
 							inputConnection:Disconnect()
 						end
 					end)
@@ -385,7 +399,7 @@ function Library:CreateWindow(title, size)
 				Create("TextLabel", {
 					Parent = SliderContainer,
 					BackgroundTransparency = 1,
-					Size = UDim2.new(1, 0, 0, 18),
+					Size = UDim2.new(1, 0, 0, 20),
 					Font = Theme.Font,
 					Text = text,
 					TextColor3 = Theme.TextDark,
@@ -393,22 +407,23 @@ function Library:CreateWindow(title, size)
 					TextXAlignment = Enum.TextXAlignment.Left
 				})
 				
+				-- Бар теперь с фоном и обводкой
 				local Bar = Create("Frame", {
 					Parent = SliderContainer,
-					BackgroundColor3 = Theme.BindBg, -- Темный фон бара
+					BackgroundColor3 = Theme.ElementBg, -- Фон
 					Size = UDim2.new(1, 0, 0, 20),
 					Position = UDim2.new(0, 0, 0, 22)
 				})
 				Create("UICorner", {Parent = Bar, CornerRadius = UDim.new(0, 4)})
-				
+				AddStroke(Bar, Theme.ElementBorder, 1) -- Обводка
+
 				local Fill = Create("Frame", {
 					Parent = Bar,
-					BackgroundColor3 = Theme.Accent, -- Розовый заполнитель
+					BackgroundColor3 = Theme.Accent,
 					Size = UDim2.new((default - min)/(max - min), 0, 1, 0)
 				})
 				Create("UICorner", {Parent = Fill, CornerRadius = UDim.new(0, 4)})
 				
-				-- Текст значения ВНУТРИ бара
 				local ValueLabel = Create("TextLabel", {
 					Parent = Bar,
 					BackgroundTransparency = 1,
@@ -452,7 +467,7 @@ function Library:CreateWindow(title, size)
 				local DropContainer = Create("Frame", {
 					Parent = parent,
 					BackgroundTransparency = 1,
-					Size = UDim2.new(1, 0, 0, 45),
+					Size = UDim2.new(1, 0, 0, 48),
 					ZIndex = 5
 				})
 				
@@ -467,15 +482,17 @@ function Library:CreateWindow(title, size)
 					TextXAlignment = Enum.TextXAlignment.Left
 				})
 				
+				-- Кнопка списка с фоном и обводкой
 				local Box = Create("TextButton", {
 					Parent = DropContainer,
-					BackgroundColor3 = Theme.BindBg,
+					BackgroundColor3 = Theme.ElementBg, -- Фон
 					Size = UDim2.new(1, 0, 0, 24),
-					Position = UDim2.new(0, 0, 0, 20),
+					Position = UDim2.new(0, 0, 0, 22),
 					Text = "",
 					AutoButtonColor = false
 				})
 				Create("UICorner", {Parent = Box, CornerRadius = UDim.new(0, 4)})
+				AddStroke(Box, Theme.ElementBorder, 1) -- Обводка
 				
 				local CurrentText = Create("TextLabel", {
 					Parent = Box,
@@ -502,9 +519,9 @@ function Library:CreateWindow(title, size)
 				
 				local List = Create("ScrollingFrame", {
 					Parent = Box,
-					BackgroundColor3 = Theme.BindBg,
+					BackgroundColor3 = Theme.ElementBg,
 					BorderSizePixel = 0,
-					Position = UDim2.new(0, 0, 1, 2),
+					Position = UDim2.new(0, 0, 1, 4),
 					Size = UDim2.new(1, 0, 0, 0),
 					Visible = false,
 					ZIndex = 10,
@@ -512,6 +529,7 @@ function Library:CreateWindow(title, size)
 					ScrollBarImageColor3 = Theme.Accent
 				})
 				Create("UICorner", {Parent = List, CornerRadius = UDim.new(0, 4)})
+				AddStroke(List, Theme.ElementBorder, 1)
 				Create("UIListLayout", {Parent = List, SortOrder = Enum.SortOrder.LayoutOrder})
 				
 				local open = false
