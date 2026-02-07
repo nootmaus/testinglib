@@ -65,7 +65,8 @@ local function AddBorderGradient(parent)
 	return gradient
 end
 
-function Library:CreateWindow(title)
+-- ИЗМЕНЕНО: Добавлен аргумент size
+function Library:CreateWindow(title, size)
 	local ScreenGui = Create("ScreenGui", {
 		Name = "MatchaLib",
 		ResetOnSpawn = false,
@@ -83,13 +84,16 @@ function Library:CreateWindow(title)
 		ScreenGui.Parent = Players.LocalPlayer:WaitForChild("PlayerGui")
 	end
 
+	-- ИЗМЕНЕНО: Если размер не указан, ставим стандартный 460x400
+	local windowSize = size or UDim2.new(0, 460, 0, 400)
+
 	local Window = Create("Frame", {
 		Name = "Main",
 		Parent = ScreenGui,
 		BackgroundColor3 = Theme.Background,
 		BorderSizePixel = 0,
-		Position = UDim2.new(0.5, -230, 0.5, -200),
-		Size = UDim2.new(0, 460, 0, 400),
+		Position = UDim2.new(0.5, -windowSize.X.Offset/2, 0.5, -windowSize.Y.Offset/2), -- Центрируем по размеру
+		Size = windowSize,
 		ClipsDescendants = true
 	})
 	
