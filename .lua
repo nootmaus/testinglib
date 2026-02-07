@@ -1,3 +1,5 @@
+-- === НАЧАЛО БИБЛИОТЕКИ (MATCHA LIB FIXED) ===
+
 local Players, UIS, Tween, Run, Core = game:GetService("Players"), game:GetService("UserInputService"), game:GetService("TweenService"), game:GetService("RunService"), game:GetService("CoreGui")
 
 local Library = {}
@@ -15,7 +17,6 @@ local C = {
 
 local F = { Bold = Enum.Font.GothamBold, Medium = Enum.Font.GothamMedium, Normal = Enum.Font.Gotham }
 
--- Функция для быстрого создания объектов (экономит место)
 local function create(class, props, children)
 	local inst = Instance.new(class)
 	for k, v in pairs(props or {}) do inst[k] = v end
@@ -27,19 +28,17 @@ function Library.new(cfg)
 	local self = setmetatable({}, Library)
 	cfg = cfg or {}
 	self._conns, self._tabs, self._tabBtns, self._pages = {}, {}, {}, {}
-	self._width, self._height = cfg.Width or 680, cfg.Height or 560
+	self._width, self._height = cfg.Width or 500, cfg.Height or 400 -- Чуть уменьшил дефолт для удобства
 	local title, subtitle = cfg.Title or "Matcha", cfg.Subtitle or ""
 
 	if Core:FindFirstChild("MatchaLib") then Core.MatchaLib:Destroy() end
 	self._sg = create("ScreenGui", {Name = "MatchaLib", ResetOnSpawn = false, ZIndexBehavior = Enum.ZIndexBehavior.Sibling, DisplayOrder = 100, Parent = Core})
 	
-	-- Основное окно
 	self._main = create("Frame", {
 		Name = "Main", Size = UDim2.new(0, self._width, 0, self._height), Position = UDim2.new(0.5, -self._width/2, 0.5, -self._height/2),
 		BackgroundColor3 = C.BgMain, BorderSizePixel = 0, Active = true, ClipsDescendants = true, Parent = self._sg
 	}, {create("UICorner", {CornerRadius = UDim.new(0, 8)}), create("UIStroke", {Color = C.Border, Thickness = 1})})
 
-	-- Хедер
 	self._header = create("Frame", {
 		Name = "Hdr", Size = UDim2.new(1, 0, 0, 32), BackgroundColor3 = C.BgHeader, BorderSizePixel = 0, Parent = self._main
 	}, {
@@ -50,7 +49,6 @@ function Library.new(cfg)
 		create("TextLabel", {Size = UDim2.new(0.5, -80, 1, 0), Position = UDim2.new(0.5, 10, 0, 0), BackgroundTransparency = 1, Text = subtitle, TextColor3 = C.TextDim, Font = F.Normal, TextSize = 11, TextXAlignment = Enum.TextXAlignment.Right})
 	})
 
-	-- Новые кнопки (Закрыть и Свернуть)
 	local btnContainer = create("Frame", {Size = UDim2.new(0, 60, 1, 0), Position = UDim2.new(1, -65, 0, 0), BackgroundTransparency = 1, Parent = self._header})
 	local layout = create("UIListLayout", {Parent = btnContainer, FillDirection = Enum.FillDirection.Horizontal, HorizontalAlignment = Enum.HorizontalAlignment.Right, SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 5)})
 	
@@ -62,7 +60,6 @@ function Library.new(cfg)
 		return b
 	end
 
-	-- Кнопка свернуть (-)
 	self._minimized, self._normSize, self._miniSize = false, UDim2.new(0, self._width, 0, self._height), UDim2.new(0, self._width, 0, 32)
 	mkBtn("-", C.Accent, function()
 		self._minimized = not self._minimized
@@ -75,22 +72,18 @@ function Library.new(cfg)
 		end
 	end)
 
-	-- Кнопка закрыть (x)
 	mkBtn("×", C.Red, function() self:Destroy() end)
 	create("UIPadding", {Parent = btnContainer, PaddingTop = UDim.new(0, 4), PaddingRight = UDim.new(0, 0)})
 
-	-- Таб бар и контент
 	self._tabBar = create("Frame", {Name = "TabBar", Size = UDim2.new(1, 0, 0, 28), Position = UDim2.new(0, 0, 0, 32), BackgroundColor3 = C.BgHeader, BorderSizePixel = 0, Parent = self._main}, 
 		{create("Frame", {Size = UDim2.new(1, 0, 0, 1), Position = UDim2.new(0, 0, 1, -1), BackgroundColor3 = C.Border, BorderSizePixel = 0}), create("UIListLayout", {FillDirection = Enum.FillDirection.Horizontal, SortOrder = Enum.SortOrder.LayoutOrder})})
 	self._content = create("Frame", {Name = "Content", Size = UDim2.new(1, -16, 1, -68), Position = UDim2.new(0, 8, 0, 64), BackgroundTransparency = 1, ClipsDescendants = false, Parent = self._main})
 
-	-- Дропдауны
 	self._dropOverlay = create("Frame", {Name = "DropOverlay", Size = UDim2.new(1, 0, 1, 0), BackgroundTransparency = 1, ZIndex = 50, Visible = false, Parent = self._main})
 	create("TextButton", {Size = UDim2.new(1, 0, 1, 0), BackgroundTransparency = 1, Text = "", ZIndex = 50, Parent = self._dropOverlay}).MouseButton1Click:Connect(function() self:_closeDropdown() end)
 	self._dropList = create("Frame", {Name = "DropList", BackgroundColor3 = C.BgDropdown, BorderSizePixel = 0, ZIndex = 55, Visible = false, Parent = self._dropOverlay}, 
 		{create("UICorner", {CornerRadius = UDim.new(0, 4)}), create("UIStroke", {Color = C.Border, Thickness = 1}), create("UIListLayout", {SortOrder = Enum.SortOrder.LayoutOrder})})
 
-	-- Перетаскивание (Drag)
 	local dragging, dragStart, startPos
 	self._header.InputBegan:Connect(function(inp) if inp.UserInputType == Enum.UserInputType.MouseButton1 then dragging, dragStart, startPos = true, inp.Position, self._main.Position end end)
 	table.insert(self._conns, UIS.InputChanged:Connect(function(inp) 
@@ -101,7 +94,6 @@ function Library.new(cfg)
 	end))
 	table.insert(self._conns, UIS.InputEnded:Connect(function(inp) if inp.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end end))
 
-	-- Тоггл клавиша
 	if cfg.ToggleKey then
 		table.insert(self._conns, UIS.InputBegan:Connect(function(inp, gpe) if not gpe and inp.KeyCode == cfg.ToggleKey then self._main.Visible = not self._main.Visible end end))
 	end
@@ -227,4 +219,30 @@ function Library:Destroy()
 	if self._sg then self._sg:Destroy() end
 end
 
-return Library
+-- === КОНЕЦ БИБЛИОТЕКИ, НАЧАЛО ПРИМЕРА ===
+
+local Window = Library.new({
+    Title = "Super Hub",
+    Subtitle = "Fixed & Working",
+    Width = 500,
+    Height = 400,
+    ToggleKey = Enum.KeyCode.RightShift
+})
+
+local Tab = Window:AddTab("Main")
+local Col1 = Tab:AddColumn()
+local Col2 = Tab:AddColumn()
+
+Col1:AddSection("Player")
+Col1:AddToggle({Text = "God Mode", Default = false, Callback = function(v) print("God Mode:", v) end})
+Col1:AddSlider({Text = "WalkSpeed", Min = 16, Max = 200, Default = 16, Callback = function(v) 
+    if game.Players.LocalPlayer.Character then game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = v end 
+end})
+
+Col2:AddSection("Settings")
+Col2:AddDropdown({Text = "Select Team", Options = {"Red", "Blue"}, Default = "Red", Callback = function(v) print("Team:", v) end})
+Col2:AddToggle({Text = "Auto Farm", Keybind = "F", Callback = function(v) print("Auto Farm:", v) end})
+
+-- Создадим еще одну вкладку для теста
+local Tab2 = Window:AddTab("Visuals")
+Tab2:AddColumn():AddSection("ESP Settings")
