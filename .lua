@@ -5,12 +5,15 @@ local UserInputService = game:GetService("UserInputService")
 local CoreGui = game:GetService("CoreGui")
 local TweenService = game:GetService("TweenService")
 
+local Color1 = Color3.fromHex("#f4b3ef")
+local Color2 = Color3.fromHex("#ffa8f8")
+
 local Theme = {
 	Background = Color3.fromRGB(15, 15, 15),
 	Section = Color3.fromRGB(35, 35, 35),
 	Text = Color3.fromRGB(230, 230, 230),
 	TextDark = Color3.fromRGB(140, 140, 140),
-	MainColor = Color3.fromRGB(60, 170, 255),
+	MainColor = Color1,
 	Border = Color3.fromRGB(50, 50, 50),
 	Font = Enum.Font.Gotham
 }
@@ -57,15 +60,14 @@ end
 local function AddBorderGradient(parent)
 	local gradient = Instance.new("UIGradient")
 	gradient.Color = ColorSequence.new{
-		ColorSequenceKeypoint.new(0, Color3.fromRGB(60, 170, 255)),
-		ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 255, 255))
+		ColorSequenceKeypoint.new(0, Color1),
+		ColorSequenceKeypoint.new(1, Color2)
 	}
 	gradient.Rotation = 45
 	gradient.Parent = parent
 	return gradient
 end
 
--- ИЗМЕНЕНО: Добавлен аргумент size
 function Library:CreateWindow(title, size)
 	local ScreenGui = Create("ScreenGui", {
 		Name = "MatchaLib",
@@ -84,7 +86,6 @@ function Library:CreateWindow(title, size)
 		ScreenGui.Parent = Players.LocalPlayer:WaitForChild("PlayerGui")
 	end
 
-	-- ИЗМЕНЕНО: Если размер не указан, ставим стандартный 460x400
 	local windowSize = size or UDim2.new(0, 460, 0, 400)
 
 	local Window = Create("Frame", {
@@ -92,7 +93,7 @@ function Library:CreateWindow(title, size)
 		Parent = ScreenGui,
 		BackgroundColor3 = Theme.Background,
 		BorderSizePixel = 0,
-		Position = UDim2.new(0.5, -windowSize.X.Offset/2, 0.5, -windowSize.Y.Offset/2), -- Центрируем по размеру
+		Position = UDim2.new(0.5, -windowSize.X.Offset/2, 0.5, -windowSize.Y.Offset/2),
 		Size = windowSize,
 		ClipsDescendants = true
 	})
@@ -304,7 +305,7 @@ function Library:CreateWindow(title, size)
 					Parent = ToggleFrame,
 					BackgroundTransparency = 1,
 					Position = UDim2.new(0, 18, 0, 0),
-					Size = UDim2.new(1, -18, 1, 0),
+					Size = UDim2.new(1, -70, 1, 0),
 					Font = Theme.Font,
 					Text = text,
 					TextColor3 = Theme.TextDark,
@@ -312,12 +313,54 @@ function Library:CreateWindow(title, size)
 					TextXAlignment = Enum.TextXAlignment.Left
 				})
 
+				local BindBtn = Create("TextButton", {
+					Parent = ToggleFrame,
+					BackgroundTransparency = 1,
+					Position = UDim2.new(1, -50, 0, 0),
+					Size = UDim2.new(0, 50, 1, 0),
+					Font = Theme.Font,
+					Text = "[None]",
+					TextColor3 = Theme.TextDark,
+					TextSize = 11,
+					TextXAlignment = Enum.TextXAlignment.Right
+				})
+
 				local toggled = default
-				ToggleFrame.MouseButton1Click:Connect(function()
-					toggled = not toggled
+				local bindKey = nil
+
+				local function UpdateState(state)
+					toggled = state
 					Indicator.BackgroundColor3 = toggled and Theme.MainColor or Theme.Section
 					Label.TextColor3 = toggled and Theme.Text or Theme.TextDark
 					if callback then callback(toggled) end
+				end
+
+				ToggleFrame.MouseButton1Click:Connect(function()
+					UpdateState(not toggled)
+				end)
+
+				BindBtn.MouseButton1Click:Connect(function()
+					BindBtn.Text = "..."
+					BindBtn.TextColor3 = Theme.MainColor
+					local inputConnection
+					inputConnection = UserInputService.InputBegan:Connect(function(input)
+						if input.UserInputType == Enum.UserInputType.Keyboard then
+							bindKey = input.KeyCode
+							BindBtn.Text = "[" .. bindKey.Name .. "]"
+							BindBtn.TextColor3 = Theme.TextDark
+							inputConnection:Disconnect()
+						elseif input.UserInputType == Enum.UserInputType.MouseButton1 then
+							BindBtn.Text = bindKey and "[" .. bindKey.Name .. "]" or "[None]"
+							BindBtn.TextColor3 = Theme.TextDark
+							inputConnection:Disconnect()
+						end
+					end)
+				end)
+
+				UserInputService.InputBegan:Connect(function(input, gameProcessed)
+					if not gameProcessed and bindKey and input.KeyCode == bindKey then
+						UpdateState(not toggled)
+					end
 				end)
 			end
 
